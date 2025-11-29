@@ -32,35 +32,34 @@ const router = express.Router();
  * 400:
  * description: User already exists
  */
-// Route: POST /api/auth/register
 router.post("/register", register);
 
 /**
  * @swagger
- * /api/auth/login:                <-- The URL
- * post:                         <-- The Method (GET, POST, etc)
- * summary: Login to App       <-- Short description
- * tags: [Auth]                <-- Groups it under "Auth" section
+ * /api/auth/login:
+ * post:
+ * summary: Login and get token
+ * tags: [Auth]
  * requestBody:
  * required: true
  * content:
  * application/json:
  * schema:
  * type: object
+ * required:
+ * - email
+ * - password
  * properties:
- * email:            <-- Input Field 1
+ * email:
  * type: string
- * example: test@gmail.com
- * password:         <-- Input Field 2
+ * password:
  * type: string
- * example: 123456
  * responses:
- * 200:                      <-- What happens on Success?
- * description: Login Successful
- * 401:                      <-- What happens on Failure?
- * description: Wrong Password
+ * 200:
+ * description: Login successful
+ * 401:
+ * description: Invalid credentials
  */
-// Route: POST /api/auth/login
 router.post("/login", login);
 
 export default router;
