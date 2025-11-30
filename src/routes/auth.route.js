@@ -85,7 +85,7 @@ const router = express.Router();
  *                 data:
  *                   type: "null"
  *
- *       500
+ *       500:
  *         description: Server error
  *         content:
  *           application/json:
@@ -178,7 +178,7 @@ router.post("/register", register);
  *                 data:
  *                   type: "null"
  *
- *       500
+ *       500:
  *         description: Server error
  *         content:
  *           application/json:
