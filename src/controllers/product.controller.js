@@ -6,9 +6,14 @@ import Product from "../models/product.model.js";
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find({});
-    res.json(products);
+    res.json({
+      status: true, // Status indicator
+      count: products.length, // Helpful metadata
+      message: "Products fetched successfully",
+      data: products, // The actual array of data
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -20,12 +25,21 @@ export const getProductById = async (req, res) => {
     const product = await Product.findById(req.params.id);
 
     if (product) {
-      res.json(product);
+      res.json({
+        status: true, // Status indicator
+        count: product.length, // Helpful metadata
+        message: "Products fetched successfully",
+        data: product, // The actual array of data
+      });
     } else {
-      res.status(404).json({ message: "Product not found" });
+      res.status(404).json({
+        status: false,
+        message: "Product not found",
+        data: null,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -47,9 +61,23 @@ export const createProduct = async (req, res) => {
     });
 
     const createdProduct = await product.save();
-    res.status(201).json(createdProduct);
+
+    if (createdProduct) {
+      res.status(201).json({
+        status: true, // Status indicator
+        count: createdProduct.length, // Helpful metadata
+        message: "Products created successfully",
+        data: createdProduct, // The actual array of data
+      });
+    } else {
+      res.status(400).json({
+        status: false,
+        message: "Invalid product data",
+        data: null,
+      });
+    }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -62,12 +90,21 @@ export const deleteProduct = async (req, res) => {
 
     if (product) {
       await product.deleteOne();
-      res.json({ message: "Product removed" });
+      res.status(200).json({
+        status: true,
+        count: product.length,
+        message: "Product deleted successfully",
+        data: product,
+      });
     } else {
-      res.status(404).json({ message: "Product not found" });
+      res.status(404).json({
+        status: true,
+        message: "Product not found",
+        data: null,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -88,11 +125,20 @@ export const updateProduct = async (req, res) => {
       product.countInStock = countInStock || product.countInStock;
 
       const updatedProduct = await product.save();
-      res.json(updatedProduct);
+      res.status(200).json({
+        status: true,
+        count: updatedProduct.length,
+        message: "Product updated successfully",
+        data: updatedProduct,
+      });
     } else {
-      res.status(404).json({ message: "Product not found" });
+      res.status(404).json({
+        status: false,
+        message: "Product not found",
+        data: null,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };

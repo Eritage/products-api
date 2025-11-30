@@ -13,7 +13,9 @@ export async function register(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create User (Model handles the hashing)
+    // ... inside your register function
+
+    // Create User
     const user = await User.create({
       username,
       email,
@@ -21,19 +23,29 @@ export async function register(req, res) {
     });
 
     if (user) {
-      // Send response with Token (from utils)
+      // Generate the token once
+      const token = generateToken(user._id);
+
+      // Send Standardized Response
       res.status(201).json({
-        Response: "User registered successfully",
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        token: generateToken(user._id),
+        status: true,
+        message: "User registered successfully",
+        data: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          token: token, // Token is neatly inside 'data'
+        },
       });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      res.status(400).json({
+        success: false,
+        message: "User already exists",
+        data: null,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 }
 
@@ -43,22 +55,33 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Find user & select password (because select is false in model)
+    // 1. Find user & select password (because select is false in model)
     const user = await User.findOne({ email }).select("+password");
 
-    // Check if user exists AND if password matches
+    // 2. Check if user exists AND if password matches
     if (user && (await user.matchPassword(password))) {
+      // Generate the token
+      const token = generateToken(user._id);
+
+      // 3. Send status response
       res.json({
-        Response: "User logged in successfully",
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        token: generateToken(user._id), // Generate token from utils
+        status: true,
+        message: "User logged in successfully",
+        data: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          token: token, // Token is neatly inside 'data'
+        },
       });
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+        data: null,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 }

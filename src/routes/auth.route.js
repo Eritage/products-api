@@ -32,13 +32,13 @@ const router = express.Router();
  *                 example: testimony
  *               email:
  *                 type: string
- *                 example: testimony@mail.com
+ *                 example: testimony@gmail.com
  *               password:
  *                 type: string
  *                 example: password123
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User registered successfully
  *         content:
  *           application/json:
  *             schema:
@@ -52,7 +52,7 @@ const router = express.Router();
  *                   example: 201
  *                 message:
  *                   type: string
- *                   example: User created successfully
+ *                   example: User registered successfully
  *                 data:
  *                   type: object
  *                   properties:
@@ -62,6 +62,9 @@ const router = express.Router();
  *                       type: string
  *                     email:
  *                       type: string
+ *                     token:
+ *                       type: string
+ *                       example: jwt_token_here
  *
  *       400:
  *         description: User already exists or invalid input
@@ -81,6 +84,23 @@ const router = express.Router();
  *                   example: User already exists
  *                 data:
  *                   type: "null"
+ *
+ *       500
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
  */
 router.post("/register", register);
 
@@ -126,9 +146,6 @@ router.post("/register", register);
  *                 data:
  *                   type: object
  *                   properties:
- *                     token:
- *                       type: string
- *                       example: jwt_token_here
  *                     user:
  *                       type: object
  *                       properties:
@@ -138,6 +155,10 @@ router.post("/register", register);
  *                           type: string
  *                         email:
  *                           type: string
+ *                         token:
+ *                           type: string
+ *                           example: jwt_token_here
+ *
  *       401:
  *         description: Invalid credentials
  *         content:
@@ -156,6 +177,23 @@ router.post("/register", register);
  *                   example: Invalid credentials
  *                 data:
  *                   type: "null"
+ *
+ *       500
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
  */
 router.post("/login", login);
 
