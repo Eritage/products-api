@@ -112,7 +112,7 @@ router.post("/", protect, createProduct); // Protected: Only logged-in users can
  *     parameters:
  *       - in: path
  *         name: id
-  *        required: true
+ *         required: true
  *         schema:
  *           type: string
  *         description: The product ID
@@ -128,23 +128,23 @@ router.post("/", protect, createProduct); // Protected: Only logged-in users can
  *       404:
  *         description: The product was not found
  */
-router.put("/:id", protect, updateProduct); // Protected: Update
+router.put("/:id", protect, updateProduct); //Protected: Update
 
 /**
  * @swagger
  * /api/products/{id}:
  *   delete:
- *   summary: Delete a product
- *   tags: [Products]
- *   security:
- *     - bearerAuth: []
- *   parameters:
- *     - in: path
- *       name: id
- *       required: true
- *       schema:
- *         type: string
- *       description: The product ID
+ *     summary: Delete a product
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The product ID
  *     responses:
  *       200:
  *         description: The product was deleted
