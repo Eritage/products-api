@@ -20,6 +20,7 @@ connectDB();
 app.use("/api/auth",authRoutes);
 // This prefixes all products routes with "/api/products"
 app.use("/api/products",productRoutes);
+// This prefixes all docs routes with "/api-docs"
 app.use("/api-docs",swaggerUi.serve,swaggerUi.setup(swaggerSpec));
 
 export default app;
