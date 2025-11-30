@@ -6,7 +6,7 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: User Authentication
+ *   name: User Auth
  *   description: API endpoints for user authentication
  */
 
@@ -15,7 +15,7 @@ const router = express.Router();
  * /api/auth/register:
  *   post:
  *     summary: Register a new user
- *     tags: [Auth]
+ *     tags: [User Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -89,7 +89,7 @@ router.post("/register", register);
  * /api/auth/login:
  *   post:
  *     summary: Login and get access token
- *     tags: [Auth]
+ *     tags: [User Auth]
  *     requestBody:
  *       required: true
  *       content:

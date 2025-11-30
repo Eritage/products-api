@@ -13,7 +13,7 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Products Authentication
+ *   name: Products Auth
  *   description: API endpoints for products authentication
  */
 
@@ -52,7 +52,7 @@ const router = express.Router();
  * /api/products:
  *   get:
  *     summary: Get all products
- *     tags: [Products]
+ *     tags: [Products Auth]
  *     responses:
  *       200:
  *         description: Products fetched successfully
@@ -100,7 +100,7 @@ router.get("/", getProducts); // Public: Anyone can see the list
  * /api/products/{id}:
  *   get:
  *     summary: Get a product by ID
- *     tags: [Products]
+ *     tags: [Products Auth]
  *     parameters:
  *       - in: path
  *         name: id
@@ -153,7 +153,7 @@ router.get("/:id", getProductById); // Public: Anyone can see details
  * /api/products:
  *   post:
  *     summary: Create a new product
- *     tags: [Products]
+ *     tags: [Products Auth]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -207,7 +207,7 @@ router.post("/", protect, createProduct); // Protected: Only logged-in users can
  * /api/products/{id}:
  *   put:
  *     summary: Update a product
- *     tags: [Products]
+ *     tags: [Products Auth]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -268,7 +268,7 @@ router.put("/:id", protect, updateProduct); //Protected: Update
  * /api/products/{id}:
  *   delete:
  *     summary: Delete a product
- *     tags: [Products]
+ *     tags: [Products Auth]
  *     security:
  *       - bearerAuth: []
  *     parameters:
