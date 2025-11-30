@@ -29,15 +29,58 @@ const router = express.Router();
  *             properties:
  *               username:
  *                 type: string
+ *                 example: testimony
  *               email:
  *                 type: string
+ *                 example: testimony@mail.com
  *               password:
  *                 type: string
+ *                 example: password123
  *     responses:
  *       201:
  *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 statusCode:
+ *                   type: number
+ *                   example: 201
+ *                 message:
+ *                   type: string
+ *                   example: User created successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *
  *       400:
- *         description: User already exists
+ *         description: User already exists or invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 400
+ *                 message:
+ *                   type: string
+ *                   example: User already exists
+ *                 data:
+ *                   type: "null"
  */
 router.post("/register", register);
 
@@ -45,7 +88,7 @@ router.post("/register", register);
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Login and get token
+ *     summary: Login and get access token
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -59,13 +102,60 @@ router.post("/register", register);
  *             properties:
  *               email:
  *                 type: string
- *             password:
+ *                 example: testimony@gmail.com
+ *               password:
  *                 type: string
+ *                 example: password123
  *     responses:
  *       200:
  *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 statusCode:
+ *                   type: number
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: jwt_token_here
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         username:
+ *                           type: string
+ *                         email:
+ *                           type: string
  *       401:
  *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 401
+ *                 message:
+ *                   type: string
+ *                   example: Invalid credentials
+ *                 data:
+ *                   type: "null"
  */
 router.post("/login", login);
 
