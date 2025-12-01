@@ -23,6 +23,12 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false, // Security: Hides password from normal queries
     },
+    // This determines if a user is a "Manager" or "Customer"
+    isAdmin: {
+      type: Boolean,
+      required: true,
+      default: false, // Default is regular user
+    },
   },
   { timestamps: true }
 );

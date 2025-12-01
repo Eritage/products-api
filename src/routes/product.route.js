@@ -6,7 +6,8 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/product.controller.js";
-import { protect } from "../middlewares/auth.middleware.js"; // The Guard
+import { protect,admin } from "../middlewares/auth.middleware.js"; // The Guard
+import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -241,7 +242,7 @@ router.get("/:id", getProductById); // Public: Anyone can see details
  *                   type: string
  *                   example: Internal server error
  */
-router.post("/", protect, createProduct); // Protected: Only logged-in users can create
+router.post("/", protect,upload.single("image"), createProduct); // Protected: Only logged-in users can create
 
 /**
  * @swagger
@@ -389,6 +390,8 @@ router.put("/:id", protect, updateProduct); //Protected: Update
  *                   type: string
  *                   example: Internal server error
  */
-router.delete("/:id", protect, deleteProduct); // Protected: Delete
+// Admin Routes (Must be logged in AND be an Admin)
+// The middleware runs Left to Right: protect -> admin -> deleteProduct
+router.delete("/:id", protect, admin , deleteProduct);
 
 export default router;

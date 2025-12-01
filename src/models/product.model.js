@@ -31,6 +31,12 @@ const productSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    image: {
+      type: String,
+      required: true,
+      default:
+        "[https://via.placeholder.com/150](https://via.placeholder.com/150)", // Fallback image
+    },
   },
   {
     timestamps: true,

@@ -32,3 +32,14 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: "Not authorized, no token" });
   }
 };
+
+// ADMIN CHECK: Verifies the 'isAdmin' field
+export const admin = (req, res, next) => {
+  // We can only check req.user because 'protect' ran first!
+  if (req.user && req.user.isAdmin) {
+    next(); // Access Granted
+  } else {
+    res.status(401).json({ message: "Not authorized as an admin" });
+  }
+};
+
