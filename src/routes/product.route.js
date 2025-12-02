@@ -14,7 +14,7 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Products Authentication
+ *   name: Products Auth
  *   description: API endpoints for products authentication
  */
 
@@ -34,6 +34,9 @@ const router = express.Router();
  *         name:
  *           type: string
  *           example: "fan"
+ *         image:
+ *           type: string
+ *           example: "https://res.cloudinary.com/dzt1hpwj7/image/upload/v1701417381/samples/ecommerce/fan_afl9v9.jpg"
  *         price:
  *           type: number
  *           example: 50
@@ -86,6 +89,21 @@ const router = express.Router();
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Product'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                       example: 1
+ *                     pages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                       example: 5
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of items
+ *                       example: 50
  *       500:
  *         description: Server error
  *         content:

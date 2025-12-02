@@ -13,6 +13,12 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please add a name"],
       trim: true,
     },
+    image: {
+      type: String,
+      required: true,
+      default:
+        "[https://via.placeholder.com/150](https://via.placeholder.com/150)", // Fallback image
+    },
     price: {
       type: Number,
       required: [true, "Please add a price"],
@@ -30,12 +36,6 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
-    },
-    image: {
-      type: String,
-      required: true,
-      default:
-        "[https://via.placeholder.com/150](https://via.placeholder.com/150)", // Fallback image
     },
   },
   {
