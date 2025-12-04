@@ -10,7 +10,11 @@ export async function register(req, res) {
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        status: false,
+        message: "User already exists",
+        data: null,
+      });
     }
 
     // ... inside your register function
@@ -38,9 +42,9 @@ export async function register(req, res) {
         },
       });
     } else {
-      res.status(400).json({
+      res.status(401).json({
         success: false,
-        message: "User already exists",
+        message: "Invalid user data",
         data: null,
       });
     }

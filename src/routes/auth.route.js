@@ -67,7 +67,25 @@ const router = express.Router();
  *                       example: jwt_token_here
  *
  *       400:
- *         description: User already exists or invalid input
+ *         description: User already exists with this email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User already exists"
+ *                 data:
+ *                   type: null
+ *                   example: null
+
+ *
+ *       401:
+ *         description: User data is invalid
  *         content:
  *           application/json:
  *             schema:
@@ -81,7 +99,7 @@ const router = express.Router();
  *                   example: 400
  *                 message:
  *                   type: string
- *                   example: User already exists
+ *                   example: invalid user data
  *                 data:
  *                   type: "null"
  *

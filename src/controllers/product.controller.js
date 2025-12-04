@@ -116,7 +116,7 @@ export const createProduct = async (req, res) => {
 
 // description: Delete a product
 // route: DELETE /api/products/:id
-// access: Private (Needs Token)
+// access: Private (Admin only via route, Needs Token)
 export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -143,7 +143,7 @@ export const deleteProduct = async (req, res) => {
 
 // description: Update a product
 // route: PUT /api/products/:id
-// access: Private (Needs Token)
+// access: Private (Admin and owner only, Needs Token)
 export const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category, countInStock } = req.body;
@@ -160,7 +160,11 @@ export const updateProduct = async (req, res) => {
       ) {
         return res
           .status(401)
-          .json({ message: "Not authorized to edit this product" });
+          .json({
+            status: false,
+            message: "Not authorized to edit this product",
+            data: null,
+          });
       }
       product.name = name || product.name;
       product.price = price || product.price;
@@ -174,6 +178,61 @@ export const updateProduct = async (req, res) => {
         count: updatedProduct.length,
         message: "Product updated successfully",
         data: updatedProduct,
+      });
+    } else {
+      res.status(404).json({
+        status: false,
+        message: "Product not found",
+        data: null,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// description: Create new review
+// route: POST /api/products/:id/reviews
+// access: Private(Needs Token)
+export const createProductReview = async (req, res) => {
+  const { rating, comment } = req.body;
+
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const alreadyReviewed = product.reviews.find(
+        (r) => r.user.toString() === req.user._id.toString()
+      );
+
+      if (alreadyReviewed) {
+        return res.status(400).json({
+          status: false,
+          message: "Product already reviewed by this user",
+          data: null,
+        });
+      }
+
+      const review = {
+        name: req.user.username,
+        rating: Number(rating),
+        comment,
+        user: req.user._id,
+      };
+
+      product.reviews.push(review);
+      product.numReviews = product.reviews.length;
+      product.rating =
+        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+        product.reviews.length;
+
+      await product.save();
+
+      // UPDATED: Now we return the whole product (with the new stats)
+      res.status(201).json({
+        status: true,
+        message: "Review added",
+        data: product,
       });
     } else {
       res.status(404).json({

@@ -5,6 +5,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  createProductReview,
 } from "../controllers/product.controller.js";
 import { protect,admin } from "../middlewares/auth.middleware.js"; // The Guard
 import upload from "../middlewares/upload.middleware.js";
@@ -373,6 +374,22 @@ router.put("/:id", protect, updateProduct); //Protected: Update
  *                   example: Product deleted successfully
  *                 data:
  *                   $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Not authorized - User is not the product owner or admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized to edit this product"
+ *                 data:
+ *                   type: null
+ *                   example: null
  *       404:
  *         description: The product was not found
  *         content:
@@ -411,5 +428,111 @@ router.put("/:id", protect, updateProduct); //Protected: Update
 // Admin Routes (Must be logged in AND be an Admin)
 // The middleware runs Left to Right: protect -> admin -> deleteProduct
 router.delete("/:id", protect, admin , deleteProduct);
+
+/**
+ * @swagger
+ * /api/products/{id}/reviews:
+ *   post:
+ *     summary: Create a new review
+ *     tags: [Products Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The product ID to review
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rating
+ *               - comment
+ *             properties:
+ *               rating:
+ *                 type: number
+ *                 description: Rating from 1 to 5
+ *                 example: 5
+ *               comment:
+ *                 type: string
+ *                 description: Review text
+ *                 example: "This product is amazing!"
+ *     responses:
+ *       201:
+ *         description: Review added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: "Review added"
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Product already reviewed by this user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: "Product already reviewed"
+ *       404:
+ *         description: The product was not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: Product not found
+ *                 data:
+ *                   type: "null"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
+// "POST /api/products/123/reviews"
+router.post("/:id/reviews", protect, createProductReview);
 
 export default router;

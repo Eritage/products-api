@@ -1,5 +1,22 @@
 import mongoose from "mongoose";
 
+// Define what a single Review looks like
+const reviewSchema = mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    rating: { type: Number, required: true },
+    comment: { type: String, required: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User", // Links the review to a user
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const productSchema = new mongoose.Schema(
   {
     // This links the product to a specific User
@@ -36,6 +53,19 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
+    },
+    reviews: [reviewSchema], // An array of the reviews defined above
+
+    rating: {
+      type: Number,
+      required: true,
+      default: 0, // The average rating (e.g., 4.5)
+    },
+
+    numReviews: {
+      type: Number,
+      required: true,
+      default: 0, // How many people reviewed it
     },
   },
   {
