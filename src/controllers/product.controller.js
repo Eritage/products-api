@@ -18,9 +18,10 @@ export const getProducts = async (req, res) => {
     // 3. DB QUERY
     const count = await Product.countDocuments({ ...keyword }); // Count total matches
 
-    const products = await Product.find({ ...keyword }) // Find matches
-      .limit(pageSize) // Take 4
-      .skip(pageSize * (page - 1)); // Skip previous pages
+    const products = await Product.find({ ...keyword })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1)) // Skip previous pages
+      .select("-reviews");
 
     // 4. RESPONSE
     res.json({
@@ -158,13 +159,11 @@ export const updateProduct = async (req, res) => {
         product.user.toString() !== req.user._id.toString() &&
         !req.user.isAdmin
       ) {
-        return res
-          .status(401)
-          .json({
-            status: false,
-            message: "Not authorized to edit this product",
-            data: null,
-          });
+        return res.status(401).json({
+          status: false,
+          message: "Not authorized to edit this product",
+          data: null,
+        });
       }
       product.name = name || product.name;
       product.price = price || product.price;
