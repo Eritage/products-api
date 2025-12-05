@@ -115,33 +115,6 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// description: Delete a product
-// route: DELETE /api/products/:id
-// access: Private (Admin only via route, Needs Token)
-export const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-      await product.deleteOne();
-      res.status(200).json({
-        status: true,
-        count: product.length,
-        message: "Product deleted successfully",
-        data: product,
-      });
-    } else {
-      res.status(404).json({
-        status: true,
-        message: "Product not found",
-        data: null,
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ status: false, message: error.message });
-  }
-};
-
 // description: Update a product
 // route: PUT /api/products/:id
 // access: Private (Admin and owner only, Needs Token)
@@ -236,6 +209,33 @@ export const createProductReview = async (req, res) => {
     } else {
       res.status(404).json({
         status: false,
+        message: "Product not found",
+        data: null,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// description: Delete a product
+// route: DELETE /api/products/:id
+// access: Private (Admin only via route, Needs Token)
+export const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      await product.deleteOne();
+      res.status(200).json({
+        status: true,
+        count: product.length,
+        message: "Product deleted successfully",
+        data: product,
+      });
+    } else {
+      res.status(404).json({
+        status: true,
         message: "Product not found",
         data: null,
       });

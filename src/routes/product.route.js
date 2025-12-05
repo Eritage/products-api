@@ -342,95 +342,6 @@ router.put("/:id", protect, updateProduct); //Protected: Update
 
 /**
  * @swagger
- * /api/products/{id}:
- *   delete:
- *     summary: Delete a product
- *     tags: [Products Auth]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The product ID
- *     responses:
- *       200:
- *         description: The product was deleted
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 statusCode:
- *                   type: number
- *                   example: 200
- *                 message:
- *                   type: string
- *                   example: Product deleted successfully
- *                 data:
- *                   $ref: '#/components/schemas/Product'
- *       401:
- *         description: Not authorized - User is not the product owner or admin
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Not authorized to edit this product"
- *                 data:
- *                   type: null
- *                   example: null
- *       404:
- *         description: The product was not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 statusCode:
- *                   type: number
- *                   example: 404
- *                 message:
- *                   type: string
- *                   example: Product not found
- *                 data:
- *                   type: "null"
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 statusCode:
- *                   type: number
- *                   example: 500
- *                 message:
- *                   type: string
- *                   example: Internal server error
- */
-// Admin Routes (Must be logged in AND be an Admin)
-// The middleware runs Left to Right: protect -> admin -> deleteProduct
-router.delete("/:id", protect, admin , deleteProduct);
-
-/**
- * @swagger
  * /api/products/{id}/reviews:
  *   post:
  *     summary: Create a new review
@@ -534,5 +445,102 @@ router.delete("/:id", protect, admin , deleteProduct);
  */
 // "POST /api/products/123/reviews"
 router.post("/:id/reviews", protect, createProductReview);
+
+/**
+ * @swagger
+ * tags:
+ *   name: Products Admin Auth
+ *   description: API endpoints for products authentication
+ */
+
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     summary: Delete a product
+ *     tags: [Products Admin Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The product ID
+ *     responses:
+ *       200:
+ *         description: The product was deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 statusCode:
+ *                   type: number
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Product deleted successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Product'
+ *       401:
+ *         description: Not authorized - User is not the product owner or admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized to edit this product"
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *       404:
+ *         description: The product was not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: Product not found
+ *                 data:
+ *                   type: "null"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 statusCode:
+ *                   type: number
+ *                   example: 500
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
+// Admin Routes (Must be logged in AND be an Admin)
+// The middleware runs Left to Right: protect -> admin -> deleteProduct
+router.delete("/:id", protect, admin , deleteProduct);
+
 
 export default router;

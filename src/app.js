@@ -4,6 +4,7 @@ import swaggerUi from "swagger-ui-express";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
 import productRoutes from "./routes/product.route.js";
+import orderRoutes from "./routes/order.route.js";
 import swaggerSpec from "./config/swagger.js";
 import cors from "cors";
 import helmet from "helmet";
@@ -62,6 +63,8 @@ connectDB();
 app.use("/api/auth",authRoutes);
 // This prefixes all products routes with "/api/products"
 app.use("/api/products",productRoutes);
+// This prefixes all orders routes with "/api/orders"
+app.use("/api/orders", orderRoutes);
 
 // SWAGGER DOCUMENTATION
 // This prefixes all docs routes with "/api-docs"
