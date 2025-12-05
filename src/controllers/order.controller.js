@@ -8,7 +8,7 @@ export const addOrderItems = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod } = req.body;
 
-    // 1. Validate cart not empty
+    // Validate cart not empty
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({
         status: false,
@@ -17,7 +17,7 @@ export const addOrderItems = async (req, res) => {
       });
     }
 
-    // 2. CALCULATE PRICES ON BACKEND (Security!)
+    // CALCULATE PRICES ON BACKEND (Security!)
     let itemsPrice = 0;
     const validatedOrderItems = [];
 
@@ -55,12 +55,12 @@ export const addOrderItems = async (req, res) => {
       });
     }
 
-    // 3. Calculate other prices
+    // Calculate other prices
     const taxPrice = Number((itemsPrice * 0.1).toFixed(2));  // 10% tax
     const shippingPrice = itemsPrice > 100 ? 0 : 10;          // Free shipping over $100
     const totalPrice = itemsPrice + taxPrice + shippingPrice;
 
-    // 4. Create the Order with calculated prices
+    // Create the Order with calculated prices
     const order = new Order({
       orderItems: validatedOrderItems,
       user: req.user._id,
@@ -72,14 +72,14 @@ export const addOrderItems = async (req, res) => {
       totalPrice,
     });
 
-    // 5. Update product stock
+    // Update product stock
     for (const item of validatedOrderItems) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { countInStock: -item.quantity },
       });
     }
 
-    // 6. Save order
+    // Save order
     const createdOrder = await order.save();
 
     res.status(201).json({

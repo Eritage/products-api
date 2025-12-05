@@ -118,7 +118,7 @@ const router = express.Router();
  *   post:
  *     summary: Create a new order
  *     description: Create a new order with items from cart. Backend validates products, checks stock, and calculates all prices for security.
- *     tags: [Orders]
+ *     tags: [Orders Auth]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -545,8 +545,8 @@ router.put("/:id/pay", protect, updateOrderToPaid);
 /**
  * @swagger
  * tags:
- *   name: Order Admin Auth
- *   description: API endpoints for products authentication
+ *   name: Orders Admin Auth
+ *   description: API endpoints for orders authentication
  */
 
 /**
