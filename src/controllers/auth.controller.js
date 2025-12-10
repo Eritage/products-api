@@ -89,3 +89,23 @@ export async function login(req, res) {
     res.status(500).json({ status: false, message: error.message });
   }
 }
+
+// description: Google Auth Callback
+// route: GET /api/auth/google/callback
+export const googleAuthCallback = (req, res) => {
+  try {
+    // req.user is populated by passport
+    const token = generateToken(req.user._id);
+
+    // Redirect to frontend with token
+    // Change http://localhost:5173 to your actual Frontend URL
+    res.redirect(
+      `${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}`
+    );
+  } catch (error) {
+    console.error(error);
+    res.redirect(
+      `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=GoogleAuthFailed`
+    );
+  }
+};

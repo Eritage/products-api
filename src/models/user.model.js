@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false, // Security: Hides password from normal queries
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null/undefined values for users who didn't use Google
+    },
     // This determines if a user is a "Manager" or "Customer"
     isAdmin: {
       type: Boolean,

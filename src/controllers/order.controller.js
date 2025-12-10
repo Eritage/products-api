@@ -1,5 +1,6 @@
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
+import sendEmail from "../utils/sendEmail.js";
 
 // description: Create new order
 // route: POST /api/orders
@@ -50,14 +51,14 @@ export const addOrderItems = async (req, res) => {
         product: product._id,
         name: product.name,
         quantity: item.quantity,
-        price: product.price,  // ← From database, not user input
+        price: product.price, // ← From database, not user input
         image: product.image,
       });
     }
 
     // Calculate other prices
-    const taxPrice = Number((itemsPrice * 0.1).toFixed(2));  // 10% tax
-    const shippingPrice = itemsPrice > 100 ? 0 : 10;          // Free shipping over $100
+    const taxPrice = Number((itemsPrice * 0.1).toFixed(2)); // 10% tax
+    const shippingPrice = itemsPrice > 100 ? 0 : 10; // Free shipping over $100
     const totalPrice = itemsPrice + taxPrice + shippingPrice;
 
     // Create the Order with calculated prices
@@ -81,6 +82,24 @@ export const addOrderItems = async (req, res) => {
 
     // Save order
     const createdOrder = await order.save();
+
+    // --- SEND EMAIL NOTIFICATION ---
+    try {
+      await sendEmail({
+        email: req.user.email,
+        subject: "Order Confirmation - Products API",
+        message: `Thank you for your order! \n\nOrder ID: ${createdOrder._id}\nTotal Price: $${totalPrice}\n\nWe will notify you when it ships.`,
+        html: `
+          <h1>Thank you for your order!</h1>
+          <p>Order ID: <strong>${createdOrder._id}</strong></p>
+          <p>Total Price: <strong>$${totalPrice}</strong></p>
+          <p>We will notify you when it ships.</p>
+        `,
+      });
+    } catch (emailError) {
+      console.error("Email could not be sent:", emailError.message);
+      // We don't fail the request if email fails, just log it
+    }
 
     res.status(201).json({
       status: true,
@@ -149,38 +168,6 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-// description: Update order to paid
-// route: PUT /api/orders/:id/pay
-// access: Private/Needs Token
-export const updateOrderToPaid = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-
-    if (order) {
-      order.isPaid = true;
-      order.paidAt = Date.now();
-      // Normally, this comes from PayPal/Stripe response. We simulate it here.
-      order.paymentResult = {
-        id: req.body.id || "SIMULATED_PAYMENT_ID",
-        status: req.body.status || "COMPLETED",
-        update_time: req.body.update_time || Date.now(),
-        email_address: req.body.email_address || req.user.email,
-      };
-
-      const updatedOrder = await order.save();
-      res.json({
-        status: true,
-        message: "Order paid successfully",
-        data: updatedOrder,
-      });
-    } else {
-      res.status(404).json({ status:false, message: "Order not found", data: null });
-    }
-  } catch (error) {
-    res.status(500).json({ status:false, message: error.message });
-  }
-};
-
 // description: Get all orders
 // route: GET /api/orders
 // access: Private/Needs Token/Admin
@@ -209,6 +196,23 @@ export const updateOrderToDelivered = async (req, res) => {
       order.deliveredAt = Date.now();
 
       const updatedOrder = await order.save();
+      // SEND EMAIL NOTIFICATION
+      try {
+        await sendEmail({
+          email: req.user.email,
+          subject: "Your Order has arrived",
+          message: `Notification that the package is at their location. \n\nOrder ID: ${updatedOrder._id} \n\nYour order is now available.`,
+          html: `
+          <h1>Thank you for your order!</h1>
+          <p>Order ID: <strong>${updatedOrder._id}</strong></p>
+          <p>Your Order has arrived.</p>
+        `,
+        });
+      } catch (emailError) {
+        console.error("Email could not be sent:", emailError.message);
+        // We don't fail the request if email fails, just log it
+      }
+
       res.json({
         status: true,
         message: "Order delivered successfully",
@@ -222,6 +226,6 @@ export const updateOrderToDelivered = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ status:false, message: error.message });
+    res.status(500).json({ status: false, message: error.message });
   }
 };

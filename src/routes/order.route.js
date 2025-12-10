@@ -3,11 +3,10 @@ import {
   addOrderItems,
   getOrderById,
   getMyOrders,
-  updateOrderToPaid,
   getOrders,
-  updateOrderToDelivered
+  updateOrderToDelivered,
 } from "../controllers/order.controller.js";
-import { protect,admin } from "../middlewares/auth.middleware.js";
+import { protect, admin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -117,7 +116,26 @@ const router = express.Router();
  * /api/orders:
  *   post:
  *     summary: Create a new order
- *     description: Create a new order with items from cart. Backend validates products, checks stock, and calculates all prices for security.
+ *     description: |
+ *       Create a new order with items from cart. Backend validates products, checks stock, calculates all prices for security, and updates inventory.
+ *
+ *       **Security Features:**
+ *       - All prices are calculated on the backend using database values
+ *       - Product availability is verified in real-time
+ *       - Stock is automatically decremented after order creation
+ *
+ *       **Price Calculation:**
+ *       - Items Price: Sum of (product price × quantity) from database
+ *       - Tax: 10% of items price
+ *       - Shipping: $10 (Free for orders over $100)
+ *       - Total: Items + Tax + Shipping
+ *
+ *       **Email Notification:**
+ *       - Subject: "Order Confirmation - Products API"
+ *       - Recipient: Customer's email address
+ *       - Content: Order ID, total price, and shipping notification
+ *
+ *       **Note:** The endpoint will succeed even if email delivery fails. Email errors are logged server-side but do not affect the order creation.
  *     tags: [Orders Auth]
  *     security:
  *       - bearerAuth: []
@@ -134,7 +152,8 @@ const router = express.Router();
  *             properties:
  *               orderItems:
  *                 type: array
- *                 description: Array of products to order (prices calculated by backend)
+ *                 description: Array of products to order (prices calculated by backend for security)
+ *                 minItems: 1
  *                 items:
  *                   type: object
  *                   required:
@@ -178,10 +197,37 @@ const router = express.Router();
  *                 type: string
  *                 description: Payment method selected by user
  *                 example: "PayPal"
- *                 enum: [PayPal, Stripe, Credit Card]
+ *                 enum: [PayPal, Stripe, Credit Card, Cash on Delivery]
+ *           examples:
+ *             singleItem:
+ *               summary: Order with single item
+ *               value:
+ *                 orderItems:
+ *                   - product: "507f1f77bcf86cd799439013"
+ *                     quantity: 1
+ *                 shippingAddress:
+ *                   address: "123 Main Street"
+ *                   city: "New York"
+ *                   postalCode: "10001"
+ *                   country: "USA"
+ *                 paymentMethod: "PayPal"
+ *             multipleItems:
+ *               summary: Order with multiple items
+ *               value:
+ *                 orderItems:
+ *                   - product: "507f1f77bcf86cd799439013"
+ *                     quantity: 2
+ *                   - product: "507f1f77bcf86cd799439014"
+ *                     quantity: 1
+ *                 shippingAddress:
+ *                   address: "456 Oak Avenue"
+ *                   city: "Los Angeles"
+ *                   postalCode: "90001"
+ *                   country: "USA"
+ *                 paymentMethod: "Credit Card"
  *     responses:
  *       201:
- *         description: Order created successfully
+ *         description: Order created successfully, stock updated, and email confirmation sent
  *         content:
  *           application/json:
  *             schema:
@@ -218,7 +264,7 @@ const router = express.Router();
  *                             example: 2
  *                           price:
  *                             type: number
- *                             description: Price per unit (from database)
+ *                             description: Price per unit (calculated from database)
  *                             example: 999
  *                           image:
  *                             type: string
@@ -244,19 +290,19 @@ const router = express.Router();
  *                     itemsPrice:
  *                       type: number
  *                       description: Total price of items (calculated by backend)
- *                       example: 2247
+ *                       example: 1998
  *                     taxPrice:
  *                       type: number
- *                       description: Tax amount (calculated by backend)
- *                       example: 224.70
+ *                       description: Tax amount - 10% of items price (calculated by backend)
+ *                       example: 199.80
  *                     shippingPrice:
  *                       type: number
- *                       description: Shipping cost (calculated by backend)
- *                       example: 10
+ *                       description: Shipping cost - $10 or free over $100 (calculated by backend)
+ *                       example: 0
  *                     totalPrice:
  *                       type: number
  *                       description: Grand total (calculated by backend)
- *                       example: 2481.70
+ *                       example: 2197.80
  *                     isPaid:
  *                       type: boolean
  *                       example: false
@@ -266,7 +312,11 @@ const router = express.Router();
  *                     createdAt:
  *                       type: string
  *                       format: date-time
- *                       example: "2024-01-15T10:30:00Z"
+ *                       example: "2024-01-15T10:30:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:30:00.000Z"
  *       400:
  *         description: Bad request - Empty cart or insufficient stock
  *         content:
@@ -468,82 +518,6 @@ router.get("/:id", protect, getOrderById);
 
 /**
  * @swagger
- * /api/orders/{id}/pay:
- *   put:
- *     summary: Update order to paid
- *     tags: [Orders Auth]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Order ID
- *     requestBody:
- *       required: false
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 description: Payment ID from payment processor
- *                 example: "PAYPAL_TRANSACTION_123"
- *               status:
- *                 type: string
- *                 description: Payment status
- *                 example: "COMPLETED"
- *               update_time:
- *                 type: string
- *                 description: Payment update time
- *                 example: "2024-01-15T10:30:00Z"
- *               email_address:
- *                 type: string
- *                 description: Payer email address
- *                 example: "buyer@example.com"
- *     responses:
- *       200:
- *         description: Order paid successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Order paid successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Order'
- *       404:
- *         description: Order not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Order not found"
- *                 data:
- *                   type: null
- *                   example: null
- *       500:
- *         description: Server error
- */
-// Route to update order to paid[Logged in user]
-router.put("/:id/pay", protect, updateOrderToPaid);
-
-/**
- * @swagger
  * tags:
  *   name: Orders Admin Auth
  *   description: API endpoints for orders authentication
@@ -597,6 +571,15 @@ router.get("/", protect, admin, getOrders);
  * /api/orders/{id}/deliver:
  *   put:
  *     summary: Update order to delivered (Admin only)
+ *     description: |
+ *       Marks an order as delivered and sends an email notification to the customer.
+ *
+ *       **Email Notification:**
+ *       - Subject: "Your Order has arrived"
+ *       - Recipient: Customer's email address
+ *       - Content: Order ID and delivery confirmation
+ *
+ *       **Note:** The endpoint will succeed even if email delivery fails. Email errors are logged server-side but do not affect the order status update.
  *     tags: [Orders Admin Auth]
  *     security:
  *       - bearerAuth: []
@@ -607,9 +590,10 @@ router.get("/", protect, admin, getOrders);
  *         schema:
  *           type: string
  *         description: Order ID
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Order delivered successfully
+ *         description: Order marked as delivered successfully and email notification sent
  *         content:
  *           application/json:
  *             schema:
@@ -622,7 +606,42 @@ router.get("/", protect, admin, getOrders);
  *                   type: string
  *                   example: "Order delivered successfully"
  *                 data:
- *                   $ref: '#/components/schemas/Order'
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "507f1f77bcf86cd799439011"
+ *                     isDelivered:
+ *                       type: boolean
+ *                       example: true
+ *                     deliveredAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:30:00.000Z"
+ *                     orderItems:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     shippingAddress:
+ *                       type: object
+ *                     paymentMethod:
+ *                       type: string
+ *                     isPaid:
+ *                       type: boolean
+ *                     totalPrice:
+ *                       type: number
+ *             examples:
+ *               success:
+ *                 summary: Order delivered successfully with email notification
+ *                 value:
+ *                   status: true
+ *                   message: "Order delivered successfully"
+ *                   data:
+ *                     _id: "507f1f77bcf86cd799439011"
+ *                     isDelivered: true
+ *                     deliveredAt: "2024-01-15T14:30:00.000Z"
+ *                     isPaid: true
+ *                     totalPrice: 2481.70
  *       404:
  *         description: Order not found
  *         content:
@@ -639,6 +658,32 @@ router.get("/", protect, admin, getOrders);
  *                 data:
  *                   type: null
  *                   example: null
+ *       401:
+ *         description: Unauthorized - No token or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized, no token"
+ *       403:
+ *         description: Forbidden - User is not an admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Not authorized as an admin"
  *       500:
  *         description: Server error
  *         content:

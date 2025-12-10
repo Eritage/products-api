@@ -5,15 +5,21 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
 import productRoutes from "./routes/product.route.js";
 import orderRoutes from "./routes/order.route.js";
+import paymentRoutes from "./routes/payment.route.js";
 import swaggerSpec from "./config/swagger.js";
 import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import { rateLimit } from "express-rate-limit";
 import hpp from "hpp";
+import passport from "passport";
+import passportConfig from "./config/passport.js";
 
 // Load env vars
 dotenv.config();
+
+// Passport Config
+passportConfig(passport);
 
 // Initialize Express
 const app = express();
@@ -26,8 +32,17 @@ app.use(helmet());
 // Right now we allow ALL (*). In production, you change this to your frontend URL.
 app.use(cors({ origin: "*" }));
 
-// Body Parser: Reads JSON
-app.use(express.json());// Allows app to accept JSON data in Body
+// Body Parser: Reads JSON data into req.body
+// We add a custom condition to skip JSON parsing for the Stripe Webhook route
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/payment/webhook") {
+    next(); // Skip global JSON parser
+  } else {
+    express.json()(req, res, next); // Run global JSON parser
+  }
+});
+//initialize passport middleware
+app.use(passport.initialize());
 
 // Add this manually to unlock req.query before sanitization
 app.use((req, res, next) => {
@@ -60,14 +75,16 @@ connectDB();
 
 // ROUTES
 // This prefixes all auth routes with "/api/auth"
-app.use("/api/auth",authRoutes);
+app.use("/api/auth", authRoutes);
 // This prefixes all products routes with "/api/products"
-app.use("/api/products",productRoutes);
+app.use("/api/products", productRoutes);
 // This prefixes all orders routes with "/api/orders"
 app.use("/api/orders", orderRoutes);
+// This prefixes all payment routes with "/api/payment"
+app.use("/api/payment", paymentRoutes);
 
 // SWAGGER DOCUMENTATION
 // This prefixes all docs routes with "/api-docs"
-app.use("/api-docs",swaggerUi.serve,swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;
