@@ -18,13 +18,29 @@ export const addOrderItems = async (req, res) => {
       });
     }
 
-    // CALCULATE PRICES ON BACKEND (Security!)
+    // --- PERFORMANCE FIX: N+1 QUERY PROBLEM ---
+    // Instead of looping and querying for EACH item (10 items = 10 DB calls),
+    // we fetch ALL products in ONE database call.
+
+    // 1. Get all Product IDs from the request
+    const productIds = orderItems.map((item) => item.product);
+
+    // 2. Fetch all these products from DB in one go
+    const dbProducts = await Product.find({ _id: { $in: productIds } });
+
+    // 3. Create a map for easy lookup (ID -> Product Object)
+    const productMap = {};
+    dbProducts.forEach((p) => {
+      productMap[p._id.toString()] = p;
+    });
+
     let itemsPrice = 0;
     const validatedOrderItems = [];
+    const bulkOption = []; // For bulk stock updates
 
+    // 4. Process items using the map (In-Memory, super fast)
     for (const item of orderItems) {
-      // Get actual product from database
-      const product = await Product.findById(item.product);
+      const product = productMap[item.product];
 
       if (!product) {
         return res.status(404).json({
@@ -34,7 +50,6 @@ export const addOrderItems = async (req, res) => {
         });
       }
 
-      // Check stock availability
       if (product.countInStock < item.quantity) {
         return res.status(400).json({
           status: false,
@@ -43,7 +58,6 @@ export const addOrderItems = async (req, res) => {
         });
       }
 
-      // Use ACTUAL price from database (not from user)
       const itemTotal = product.price * item.quantity;
       itemsPrice += itemTotal;
 
@@ -51,17 +65,23 @@ export const addOrderItems = async (req, res) => {
         product: product._id,
         name: product.name,
         quantity: item.quantity,
-        price: product.price, // ← From database, not user input
+        price: product.price,
         image: product.image,
+      });
+
+      // Prepare bulk update operation for later
+      bulkOption.push({
+        updateOne: {
+          filter: { _id: product._id },
+          update: { $inc: { countInStock: -item.quantity } },
+        },
       });
     }
 
-    // Calculate other prices
-    const taxPrice = Number((itemsPrice * 0.1).toFixed(2)); // 10% tax
-    const shippingPrice = itemsPrice > 100 ? 0 : 10; // Free shipping over $100
+    const taxPrice = Number((itemsPrice * 0.1).toFixed(2));
+    const shippingPrice = itemsPrice > 100 ? 0 : 10;
     const totalPrice = itemsPrice + taxPrice + shippingPrice;
 
-    // Create the Order with calculated prices
     const order = new Order({
       orderItems: validatedOrderItems,
       user: req.user._id,
@@ -73,14 +93,11 @@ export const addOrderItems = async (req, res) => {
       totalPrice,
     });
 
-    // Update product stock
-    for (const item of validatedOrderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { countInStock: -item.quantity },
-      });
+    // 5. Execute all stock updates in ONE database call
+    if (bulkOption.length > 0) {
+      await Product.bulkWrite(bulkOption);
     }
 
-    // Save order
     const createdOrder = await order.save();
 
     // --- SEND EMAIL NOTIFICATION ---
@@ -98,7 +115,6 @@ export const addOrderItems = async (req, res) => {
       });
     } catch (emailError) {
       console.error("Email could not be sent:", emailError.message);
-      // We don't fail the request if email fails, just log it
     }
 
     res.status(201).json({
@@ -110,6 +126,7 @@ export const addOrderItems = async (req, res) => {
     res.status(500).json({ status: false, message: error.message });
   }
 };
+
 
 // description: Get logged in user orders
 // route: GET /api/orders/myOrders

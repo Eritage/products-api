@@ -97,10 +97,16 @@ export const googleAuthCallback = (req, res) => {
     // req.user is populated by passport
     const token = generateToken(req.user._id);
 
-    // Redirect to frontend with token
-    // Change http://localhost:5173 to your actual Frontend URL
+    // Instead of putting the token in the URL (which is logged in history),
+    // we send it as a cookie. The frontend must read this cookie.
+    res.cookie("token", token, {
+      httpOnly: false, // Frontend needs to read it to store it (or keep it httpOnly for session)
+      secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+      maxAge: 3 * 60 * 60 * 1000, // 3 hours
+    });
+
     res.redirect(
-      `${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}`
+      `${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success`
     );
   } catch (error) {
     console.error(error);

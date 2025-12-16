@@ -28,9 +28,13 @@ const app = express();
 // It hides "X-Powered-By: Express" and sets security headers
 app.use(helmet());
 
-// CORS: Allow Frontend Access
-// Right now we allow ALL (*). In production, you change this to your frontend URL.
-app.use(cors({ origin: "*" }));
+// Only allow requests from your specific Frontend URL
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Fallback to local Vite default
+  credentials: true, // Allow cookies to be sent
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 // Body Parser: Reads JSON data into req.body
 // We add a custom condition to skip JSON parsing for the Stripe Webhook route
@@ -45,9 +49,9 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 
 // Add this manually to unlock req.query before sanitization
+// Express 5 makes req.query read-only, but express-mongo-sanitize tries to overwrite it.
+// This is required until the library is updated for Express 5.
 app.use((req, res, next) => {
-  // The simple assignment failed because req.query is read-only.
-  // We use Object.defineProperty to force-overwrite it as a writable property.
   Object.defineProperty(req, "query", {
     value: { ...req.query },
     writable: true,

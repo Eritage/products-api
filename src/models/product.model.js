@@ -73,4 +73,7 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// This allows MongoDB to search 'name' and 'description' efficiently
+// without scanning the entire collection (RegEx scan).
+productSchema.index({ name: "text", description: "text" });
 export default mongoose.model("Product", productSchema);
