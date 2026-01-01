@@ -8,7 +8,10 @@
     "dev": "nodemon src/products.js",
     "lint": " eslint . --fix",
     "format": " prettier --write .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:verbose": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --verbose"
   },
   "keywords": [],
   "author": "",
@@ -16,9 +19,12 @@
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "nodemon": "^3.1.11"
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.1.4"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

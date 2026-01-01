@@ -17,6 +17,11 @@ import passportConfig from "./config/passport.js";
 
 // Load env vars
 dotenv.config();
+// Connect to Database (Only if not in test mode)
+// Jest connects manually in tests/setup.js
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
 // Passport Config
 passportConfig(passport);

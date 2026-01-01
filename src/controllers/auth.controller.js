@@ -7,6 +7,15 @@ export async function register(req, res) {
   try {
     const { username, email, password } = req.body;
 
+    // required fields
+    if (!email || !password ) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and password are required",
+        data: null,
+      });
+    }
+
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -43,7 +52,7 @@ export async function register(req, res) {
       });
     } else {
       res.status(401).json({
-        success: false,
+        status: false,
         message: "Invalid user data",
         data: null,
       });
@@ -59,15 +68,24 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user & select password (because select is false in model)
+    // required fields
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and password are required",
+        data: null,
+      });
+    }
+
+    // Find user & select password (because select is false in model)
     const user = await User.findOne({ email }).select("+password");
 
-    // 2. Check if user exists AND if password matches
+    // Check if user exists AND if password matches
     if (user && (await user.matchPassword(password))) {
       // Generate the token
       const token = generateToken(user._id);
 
-      // 3. Send status response
+      // Send status response
       res.json({
         status: true,
         message: "User logged in successfully",
@@ -80,7 +98,7 @@ export async function login(req, res) {
       });
     } else {
       res.status(401).json({
-        success: false,
+        status: false,
         message: "Invalid credentials",
         data: null,
       });
